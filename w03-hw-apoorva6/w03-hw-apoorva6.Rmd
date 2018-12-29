@@ -1,0 +1,462 @@
+---
+title: "Week 3 - Homework"
+author: "STAT 420, Summer 2018, apoorva6"
+date: ''
+output:
+  html_document: 
+    toc: yes
+  pdf_document: default
+urlcolor: cyan
+---
+
+
+## Exercise 1 (Using `lm` for Inference)
+
+For this exercise we will use the `cats` dataset from the `MASS` package.
+
+**(a)** Fit the following simple linear regression model in `R`. Use heart weight as the response and body weight as the predictor. 
+
+\[
+Y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+\]
+
+Store the results in a variable called `cat_model`. Use a $t$ test to test the significance of the regression. Report the following:
+
+- The null and alternative hypotheses
+- The value of the test statistic
+- The p-value of the test
+- A statistical decision at $\alpha = 0.05$
+- A conclusion in the context of the problem
+
+Null Hypothesis : $H_0: \beta_1 = 0$
+Alternate Hypothesis: $H_1: \beta_1 \neq 0$
+
+```{r}
+cats <- MASS :: cats
+cat_model <- lm(Hwt~Bwt, data=cats)  
+
+#ttest <-t.test(cats$Hwt,cats$Bwt)
+
+test_statistic <- summary(cat_model)$coefficients[,3]
+names(test_statistic) <- c("teststat_beta0","teststat_beta1")
+test_statistic
+
+# The p-value of the test
+p_value <- summary(cat_model)$coefficients[,4]
+names(p_value) <- c("pvalue_beta0","pvalue_beta1")
+p_value
+
+# A statistical decision at α=0.05
+p_value[2] < 0.05
+```
+
+Since the P value for the above model is less than the significance level $\alpha$=0.05, we reject the NULL hypothesis. Thus the body weight and heart weight of cats are inter-related.
+
+**(b)** Calculate a 90% confidence interval for $\beta_1$. Give an interpretation of the interval in the context of the problem.
+
+```{r}
+confint(cat_model, parm = "Bwt", level= 0.90)
+```
+
+The range captures 90% area where the true values of beta_1 lies. We are 90% confident that the true change in mean heart weight for an increase in 0.1 kg brain weight in cats by is between 3.619716 and 4.448409
+
+**(c)** Calculate a 99% confidence interval for $\beta_0$. Give an interpretation of the interval in the context of the problem.
+
+```{r}
+confint(cat_model, parm = "(Intercept)", level= 0.99)
+```
+
+This range captures 99% area where the true values of beta_0 lies.
+
+**(d)** Use a 99% confidence interval to estimate the mean heart weight for body weights of 2.1 and 2.8 kilograms. Which of the two intervals is wider? Why?
+
+```{r}
+newdata1 <- data.frame(Bwt = c(2.1,2.8))
+predict(cat_model, newdata= newdata1 , interval = c("confidence"),level = 0.99)
+```
+
+The confidence interval for the bodyweight = 2.1 is broader as compared to bodyweight=2.8 as the mean of bodyweights of the dataset is 2.72, and 2.8 is closer to the mean.
+
+**(e)** Use a 99% prediction interval to predict the heart weight for body weights of 2.8 and 4.2 kilograms.
+
+```{r}
+newdata2 <- data.frame(Bwt = c(2.8,4.2))
+predict(cat_model, newdata= newdata2 , interval = c("prediction"),level = 0.99)
+```
+
+
+**(f)** Create a scatterplot of the data. Add the regression line, 90% confidence bands, and 90% prediction bands.
+
+```{r}
+weight_grid = seq(min(cats$Bwt), max(cats$Bwt), by = 0.01)
+ci_band <- predict(cat_model, newdata= data.frame(Bwt = weight_grid) , interval = c("confidence"),level = 0.90)
+pi_band <- predict(cat_model, newdata= data.frame(Bwt = weight_grid) , interval = c("prediction"),level = 0.90)
+
+plot(Hwt ~ Bwt, data = cats,
+     xlab = "Bwt (in kg)",
+     ylab = "Hwt (in kg)",
+     main = "Heart weight Vs Body weight of cats",
+     pch  = 20,
+     cex  = 1,
+     col  = "grey",
+     ylim = c(min(pi_band), max(pi_band)))
+abline(cat_model, lwd = 3, col = "darkorange")
+
+lines(weight_grid, ci_band[,"lwr"], col = "dodgerblue", lwd = 2, lty = 2)
+lines(weight_grid, ci_band[,"upr"], col = "dodgerblue", lwd = 2, lty = 2)
+lines(weight_grid, pi_band[,"lwr"], col = "dodgerblue", lwd = 2, lty = 3)
+lines(weight_grid, pi_band[,"upr"], col = "dodgerblue", lwd = 2, lty = 3)
+```
+
+
+**(g)** Use a $t$ test to test:
+
+- $H_0: \beta_1 = 4$
+- $H_1: \beta_1 \neq 4$
+
+Report the following:
+
+- The value of the test statistic
+- The p-value of the test
+- A statistical decision at $\alpha = 0.05$
+
+```{r}
+ttest <-t.test(cats$Hwt,cats$Bwt,mu=4)
+teststatistic <- ttest[1]
+teststatistic
+pvalue <- ttest[3]
+pvalue
+pvalue < 0.05
+```
+
+Since the P value for the above model is less than the significance level $\alpha$=0.05, we reject the NULL hypothesis. 
+
+***
+
+## Exercise 2 (More `lm` for Inference)
+
+For this exercise we will use the `Ozone` dataset from the `mlbench` package. 
+
+```{r}
+data(Ozone, package = "mlbench")
+Ozone = Ozone[, c(4, 6, 7, 8)]
+colnames(Ozone) = c("ozone", "wind", "humidity", "temp")
+Ozone = Ozone[complete.cases(Ozone), ]
+```
+
+**(a)** Fit the following simple linear regression model in `R`. Use the ozone measurement as the response and wind speed as the predictor. 
+
+\[
+Y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+\]
+
+Store the results in a variable called `ozone_wind_model`. Use a $t$ test to test the significance of the regression. Report the following:
+
+- The null and alternative hypotheses
+- The value of the test statistic
+- The p-value of the test
+- A statistical decision at $\alpha = 0.01$
+- A conclusion in the context of the problem
+
+Null Hypothesis : $H_0: \beta_1 = 0$
+Alternate Hypothesis: $H_1: \beta_1 \neq 0$
+
+```{r}
+ozone_wind_model <- lm(ozone~wind, data = Ozone)
+
+test_statistic <- summary(ozone_wind_model)$coefficients[,3]
+names(test_statistic) <- c("teststat_beta0","teststat_beta1")
+test_statistic
+
+p_value <- summary(ozone_wind_model)$coefficients[,4]
+names(p_value) <- c("pvalue_beta0","pvalue_beta1")
+p_value
+
+p_value[2] < 0.01
+```
+Since the Pvalue for the above model is greater than the significance level $\alpha$=0.01,thus we fail to reject the NULL hypothesis. Thus wind plays an important role in obtaining accurate ozone readings.
+
+**(b)** Fit the following simple linear regression model in `R`. Use the ozone measurement as the response and temperature as the predictor. 
+
+\[
+Y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+\]
+
+Store the results in a variable called `ozone_temp_model`. Use a $t$ test to test the significance of the regression. Report the following:
+
+- The null and alternative hypotheses
+- The value of the test statistic
+- The p-value of the test
+- A statistical decision at $\alpha = 0.01$
+- A conclusion in the context of the problem
+
+Null Hypothesis : $H_0: \beta_1 = 0$
+Alternate Hypothesis: $H_1: \beta_1 \neq 0$
+
+```{r}
+ozone_temp_model. <- lm(ozone~temp, data = Ozone)
+
+test_statistic <- summary(ozone_temp_model.)$coefficients[,3]
+names(test_statistic) <- c("teststat_beta0","teststat_beta1")
+test_statistic 
+
+p_value <- summary(ozone_temp_model.)$coefficients[,4]
+names(p_value) <- c("pvalue_beta0","pvalue_beta1")
+p_value
+
+p_value < 0.01
+```
+
+Since the P value for the above model is less than the significance level $\alpha$=0.01, we reject the NULL hypothesis. Thus temperature plays an important role in obtaining accurate ozone readings.
+
+***
+
+## Exercise 3 (Simulating Sampling Distributions)
+
+For this exercise we will simulate data from the following model:
+
+\[
+Y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+\]
+
+Where $\epsilon_i \sim N(0, \sigma^2).$ Also, the parameters are known to be:
+
+- $\beta_0 = -5$
+- $\beta_1 = 3.25$
+- $\sigma^2 = 16$
+
+We will use samples of size $n = 50$.
+
+**(a)** Simulate this model $2000$ times. Each time use `lm()` to fit a simple linear regression model, then store the value of $\hat{\beta}_0$ and $\hat{\beta}_1$. 
+
+```{r}
+ beta_0 <- -5
+  beta_1 <- 3.25
+  sigma <- 4
+  birthday = 19920720
+  set.seed(birthday)
+  n = 50
+  x = seq(0, 10, length = n)
+  Sxx = sum((x - mean(x)) ^ 2)
+  var_beta_1_hat = sigma ^ 2 / Sxx
+  var_beta_0_hat = sigma ^ 2 * (1 / n + mean(x) ^ 2 / Sxx)
+
+  beta_0_hats <- as.vector(rep(0,2000))
+  beta_1_hats <- as.vector(rep(0,2000))
+  for (i in 1:2000)
+  {
+    
+    epsilon = rnorm(n, mean = 0, sd = sigma)
+    y = beta_0 + beta_1 * x + epsilon
+    sim_model<-  lm(y ~ x)
+    beta_0_hats[i] <- coef(sim_model)[1]
+    beta_1_hats[i] <- coef(sim_model)[2]
+    i <- i+1
+  }
+```
+
+**(b)** Create a table that summarizes the results of the simulations. The table should have two columns, one for $\hat{\beta}_0$ and one for $\hat{\beta}_1$. The table should have four rows:
+
+- A row for the true expected value given the known values of $x$
+- A row for the mean of the simulated values
+- A row for the true standard deviation given the known values of $x$
+- A row for the standard deviation of the simulated values
+
+```{r}
+ true_expected <-c(beta_0,beta_1) 
+ simulated_mean <-  c(mean(beta_0_hats),mean(beta_1_hats))
+ true_sd <-  sqrt(c(var_beta_0_hat,var_beta_1_hat))
+ emp_sd <- sqrt(c(var(beta_0_hats),var(beta_1_hats)))
+ 
+table <- as.data.frame(rbind(true_expected,simulated_mean,true_sd,emp_sd))
+colnames(table) <- c(expression(betahat_0),expression(betahat_1))
+
+library(knitr)
+kable(table, format = "markdown")
+```
+
+
+**(c)** Plot two histograms side-by-side:
+
+- A histogram of your simulated values for $\hat{\beta}_0$. Add the normal curve for the true sampling distribution of $\hat{\beta}_0$.
+- A histogram of your simulated values for $\hat{\beta}_1$. Add the normal curve for the true sampling distribution of $\hat{\beta}_1$.
+
+```{r, out.width='50%',fig.show='hold'}
+  hist(beta_0_hats, prob = TRUE, breaks = 25, 
+       xlab = expression(hat(beta)[0]), main = "", border = "blue")
+  curve(dnorm(x, mean = beta_0, sd = sqrt(var_beta_0_hat)), 
+        col = "darkorange", add = TRUE, lwd = 3)
+  hist(beta_1_hats, prob = TRUE, breaks = 20, 
+       xlab = expression(hat(beta)[1]), main = "", border = "blue")
+  curve(dnorm(x, mean = beta_1, sd = sqrt(var_beta_1_hat)), 
+        col = "darkorange", add = TRUE, lwd = 3)
+  
+```
+
+***
+
+## Exercise 4 (Simulating Confidence Intervals)
+
+For this exercise we will simulate data from the following model:
+
+\[
+Y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+\]
+
+Where $\epsilon_i \sim N(0, \sigma^2).$ Also, the parameters are known to be:
+
+- $\beta_0 = 5$
+- $\beta_1 = 2$
+- $\sigma^2 = 9$
+
+We will use samples of size $n = 25$.
+
+Our goal here is to use simulation to verify that the confidence intervals really do have their stated confidence level. 
+
+**(a)** Simulate this model $2500$ times. Each time use `lm()` to fit a simple linear regression model, then store the value of $\hat{\beta}_1$ and $s_e$. 
+
+```{r}
+ beta_0 <- 5
+  beta_1 <- 2
+  sigma <- 3
+  birthday = 19920720
+  set.seed(birthday)
+  n = 25
+  x = seq(0, 2.5, length = n)
+  Sxx = sum((x - mean(x)) ^ 2)
+  
+  
+  beta_hat_1_se <- as.vector(rep(0,2500))
+  beta_1_hats <- as.vector(rep(0,2500))
+  for (i in 1:2500)
+  {
+    epsilon = rnorm(n, mean = 0, sd = sigma)
+    y = beta_0 + beta_1 * x + epsilon
+    sim_model<-  lm(y ~ x)
+    beta_1_hats[i] <- coef(sim_model)[2]
+    beta_hat_1_se[i] <- summary(sim_model)$coefficient[2,2]
+    i <- i+1
+  }
+  
+```
+
+
+**(b)** For each of the $\hat{\beta}_1$ that you simulated, calculate a 95% confidence interval. Store the lower limits in a vector `lower_95` and the upper limits in a vector `upper_95`. 
+
+```{r}
+ 1-((1-.95)/2)
+  crit <- qt(0.975,df = n-2)
+  lower_95 <- beta_1_hats - (crit*beta_hat_1_se)
+  upper_95 <- beta_1_hats + (crit*beta_hat_1_se)
+ 
+```
+
+
+**(c)** What proportion of these intervals contains the true value of $\beta_1$?
+
+```{r}
+ true_int <- table(beta_1 >= lower_95 & beta_1 <= upper_95)
+    as.vector(true_int[2]/length(upper_95))
+```
+
+
+**(d)** Based on these intervals, what proportion of the simulations would reject the test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$ at $\alpha = 0.05$?
+
+```{r}
+contains_null <- table(0 >= lower_95 & 0 <= upper_95)
+    as.vector(contains_null[1]/length(lower_95))
+```
+
+**(e)** For each of the $\hat{\beta}_1$ that you simulated, calculate a 99% confidence interval. Store the lower limits in a vector `lower_99` and the upper limits in a vector `upper_99`.
+```{r}
+crit_99 <- qt(0.995 ,df = n-2)
+  lower_99 <- beta_1_hats - (crit_99*beta_hat_1_se)
+  upper_99 <- beta_1_hats + (crit_99*beta_hat_1_se)
+```
+
+**(f)** What proportion of these intervals contains the true value of $\beta_1$?
+```{r}
+ true_int1 <- table(beta_1 >= lower_99 & beta_1 <= upper_99)
+  as.vector(true_int1[2]/length(upper_99))
+```
+
+**(g)** Based on these intervals, what proportion of the simulations would reject the test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$ at $\alpha = 0.01$?
+
+```{r}
+  contains_null1 <- table(0 >= lower_99 & 0 <= upper_99)
+  as.vector(contains_null1[1]/length(lower_99))
+ 
+```
+
+
+***
+
+## Exercise 5 (Prediction Intervals "without" `predict`)
+
+Write a function named `calc_pred_int` that performs calculates prediction intervals:
+
+$$
+\hat{y}(x) \pm t_{\alpha/2, n - 2} \cdot s_e\sqrt{1 + \frac{1}{n}+\frac{(x-\bar{x})^2}{S_{xx}}}.
+$$
+
+for the linear model
+
+$$
+Y_i = \beta_0 + \beta_1 x_i + \epsilon_i.
+$$
+
+**(a)** Write this function.
+
+The function should take three inputs:
+
+- `model`, a model object that is the result of fitting the SLR model with `lm()`
+- `newdata`, a data frame with a single observation (row)
+    - This data frame will need to have a variable (column) with the same name as the data used to fit `model`.
+- `level`, the level (0.90, 0.95, etc) for the interval with a default value of `0.95`
+
+The function should return a named vector with three elements:
+
+- `estimate`, the midpoint of the interval
+- `lower`, the lower bound of the interval
+- `upper`, the upper bound of the interval
+
+
+```{r}
+cats <- MASS::cats
+cat_model <- lm(Hwt~Bwt, data=cats)
+
+calc_pred_int <- function(model, newdata,level=0.95)
+{
+  
+  #yhat
+  n <- length(cat_model$fitted.values)
+  y_hat <- predict(model,newdata = newdata)
+  
+  
+  #crit value
+  int  <- (1-  (1-level)/2)
+  crit <-  qt(int, df = n -2)
+  
+  #SE
+  x <- (model$fitted.values - model$coefficients[1])/ model$coefficients[2]
+  s_e <- summary(model)$sigma
+  Sxx = sum((x - mean(x)) ^ 2)
+  SE = s_e*(sqrt(1+(1/n)+(as.vector(newdata) -mean(x)) ^2/Sxx))
+  lower_bound <- y_hat - (crit*SE)
+  upper_bound <- y_hat + (crit*SE)
+  
+  
+    pred_int <- c(y_hat,lower_bound,upper_bound)
+    pred_int_name <- unlist(pred_int, use.names=FALSE)
+    names(pred_int_name) <- c("estimate","lower bound","upper bound")
+    pred_int_name
+}
+
+  newcat_1 = data.frame(Bwt = 4.0)
+  calc_pred_int(cat_model, newcat_1)
+
+  newcat_2 = data.frame(Bwt = 3.3)
+  calc_pred_int(cat_model, newcat_2, level = 0.99)
+
+```
+

@@ -1,0 +1,327 @@
+---
+title: "Week 1 - Homework"
+author: "STAT 420, Summer 2018, Apoorva, apoorva6"
+date: ''
+output:
+  html_document: 
+    toc: yes
+  pdf_document: default
+urlcolor: cyan
+---
+
+
+## Exercise 1 (Subsetting and Statistics)
+
+For this exercise, we will use the `msleep` dataset from the `ggplot2` package.
+
+**(a)** Install and load the `ggplot2` package.
+
+```{r}
+msleep <- ggplot2 :: msleep
+```
+
+**(b)** Note that this dataset is technically a `tibble`, not a data frame. How many observations are in this dataset? How many variables? What are the observations in this dataset?
+
+```{r}
+nobs <- nrow(msleep)
+nvar <- ncol(msleep) 
+nobs
+nvar
+``` 
+
+The dataset gives details of the sleep patterns of 83 different animals. For each animal, its sleep behavior (hours, cycle etc) is recorded along with other characteristics it possesses, such as its brain&body weights, eating habits and so on. 
+
+
+**(c)** What is the mean hours of REM sleep of individuals in this dataset?
+
+```{r}
+meanhours <- mean(na.omit(msleep$sleep_rem))
+meanhours
+```
+
+**(d)** What is the standard deviation of brain weight of individuals in this dataset?
+
+```{r}
+stddev <- sd(na.omit(msleep$brainwt))
+stddev
+```
+**(e)** Which observation (provide the `name`) in this dataset gets the most REM sleep?
+```{r}
+
+mostrem <- subset(msleep, sleep_rem == max(na.omit(sleep_rem)))
+as.data.frame(mostrem[,1])
+
+```
+
+
+**(f)** What is the average bodyweight of carnivores in this dataset?
+```{r}
+subsetcarni <- subset.data.frame(msleep, vore == "carni")
+avgbdywt <- mean(subsetcarni$bodywt)
+avgbdywt
+```
+
+
+## Exercise 2 (Plotting)
+
+For this exercise, we will use the `birthwt` dataset from the `MASS` package.
+
+**(a)** Note that this dataset is a data frame and all of the variables are numeric. How many observations are in this dataset? How many variables? What are the observations in this dataset?
+
+```{r}
+birthwt <- MASS :: birthwt
+
+nobs <- nrow(birthwt)
+nvar <- ncol(birthwt)
+nobs
+nvar
+```
+
+This dataset shows how the birth weight of an infant can be influenced by various physical and behavioral aspects of its mother and to what extent these factors affect (the risk of) an infant to be underweight. For each infant, its actual weight and indicator of risk level is provided, along with other variables relating to its mother.
+
+
+**(b)** Create a scatter plot of birth weight (y-axis) vs mother's weight before pregnancy (x-axis). Use a non-default color for the points. (Also, be sure to give the plot a title and label the axes appropriately.) Based on the scatter plot, does there seem to be a relationship between the two variables? Briefly explain.
+
+```{r}
+attach(birthwt)
+plot( lwt , bwt, main = "Mother's weight VS Infant's birth weight",
+     xlab= "Mother's Weight prior pregnancy(lbs)", ylab = "Infant's Birth weight(gms)",col = "powderblue")
+```
+
+
+**Observation:** 
+-There seems to be a weak connection between the infant's weight and mother's weight, since the 
+points are pretty scattered throughout the graph. 
+
+-But, there is a positive correlation between the two(which is weak).
+
+-The graph also shows that irrespective of the mother's prior weight, most of the infants' weights lie between
+2000 and 4000 grams
+
+
+**(c)** Create a scatter plot of birth weight (y-axis) vs mother's age (x-axis). Use a non-default color for the points. (Also, be sure to give the plot a title and label the axes appropriately.) Based on the scatter plot, does there seem to be a relationship between the two variables? Briefly explain.
+
+```{r}  
+plot( age , bwt, main = "Mother's age to infant's birth weight relationship",
+        xlab= "Mother's age", ylab = "Infant's Birth weight(gms)",col = "violet",cex.main = 1)
+```
+
+**Observation:** 
+-Here too the points are pretty scattered and there is a very weak positive correlation between the variables.
+
+-Mother's age alone may not influence the birth weight of an infant. However, age coupled with other positively correlated variables could possibly lead us in predicting the weight effectively.
+
+
+**(d)** Create side-by-side boxplots for birth weight grouped by smoking status. Use non-default colors for the plot. (Also, be sure to give the plot a title and label the axes appropriately.) Based on the boxplot, does there seem to be a difference in birth weight for mothers who smoked? Briefly explain.
+
+```{r}
+boxplot(bwt ~ smoke, main = "Relationship b/w mother's smoking status and Infant's birth weight",
+        xlab= "Smoke status(0 = Does not smoke, 1=Smokes )" , ylab = "Infant's birth weight(gms) ", col = c ("red","green"),par(ps = 12, cex = 1, cex.main = 1))
+
+```
+
+
+**Observation:** 
+- The average infant weight of smoking mothers is clearly higher than the average infant weight of non smoking mothers. However, the difference is not too big.
+
+-The range of infant birth weights(Variations) among mothers who smoked is higher than when compared to those who did not smoke.
+
+
+
+## Exercise 3 (Importing Data, More Plotting)
+
+For this exercise we will use the data stored in [`nutrition-2018.csv`](nutrition-2018.csv). It contains the nutritional values per serving size for a large variety of foods as calculated by the USDA in 2018. It is a cleaned version totaling 5956 observations and is current as of April 2018.
+
+The variables in the dataset are:
+
+- `ID` 
+- `Desc` - short description of food
+- `Water` - in grams
+- `Calories` - in kcal
+- `Protein` - in grams
+- `Fat` - in grams
+- `Carbs` - carbohydrates, in grams
+- `Fiber` - in grams
+- `Sugar` - in grams
+- `Calcium` - in milligrams
+- `Potassium` - in milligrams
+- `Sodium` - in milligrams
+- `VitaminC` - vitamin C, in milligrams
+- `Chol` - cholesterol, in milligrams
+- `Portion` - description of standard serving size used in analysis
+
+
+```{r}
+nutritiondata <- read.csv("nutrition-2018.csv")
+attach(nutritiondata)
+```
+
+**(a)** Create a histogram of `Calories`. Do not modify `R`'s default bin selection. Make the plot presentable. Describe the shape of the histogram. Do you notice anything unusual?
+
+
+```{r}
+  historgramplot <- hist(Calories, main = "Histogram of Calories", xlab  = "Calories(kCal)",col="orange",border ="lightblue")
+box(col="lightblue")
+```
+
+
+**Observation:**
+-The histogram is right-skewed
+
+-There are some outlier points(100-150 points) for Calories around 900kCal value
+
+-The frequency of distribution is decreasing for almost all calorie values except at 350kCal, where there is a sudden jump in the frequency.
+
+
+**(b)** Create a scatter plot of calories (y-axis) vs protein (x-axis). Make the plot presentable. Do you notice any trends? Do you think that knowing only the protein content of a food, you could make a good prediction of the calories in the food?
+
+
+```{r}
+  plot( Protein , Calories, main = "Calories Vs Proteins",
+        xlab= "Protein(gms)", ylab = "Calories(Kcal)",col = "blue", cex =.4)
+box(col="green")
+```
+
+
+
+**Observation:** Initially, for lower protein quantities the spread in Calorie values is high. But,the spread reduces as the protein content increases. The two variables are positively correlated. But protein alone won't help us make a good prediction of the Calories due to the scattered nature of the plot.
+
+
+
+**(c)** Create a scatter plot of `Calories` (y-axis) vs `4 * Protein + 4 * Carbs + 9 * Fat` (x-axis). Make the plot presentable. You will either need to add a new variable to the data frame, or use the `I()` function in your formula in the call to `plot()`. If you are at all familiar with nutrition, you may realize that this formula calculates the calorie count based on the protein, carbohydrate, and fat values. You'd expect then that the result here is a straight line. Is it? If not, can you think of any reasons why it is not?
+
+```{r}
+ prot <- 4* Protein
+ carb <- 4 *Carbs
+ fat <- 9 * Fat
+ addn <- prot +carb +fat
+ nutrdata <- cbind(nutritiondata, addn)
+ 
+ plot( addn , Calories, main = "Calorie count based on Proteins, carbs and fats",
+       xlab= "Protein+Carb+Fat(gms)", ylab = "Calories(Kcal)",col = "orange", cex =.4)
+ box(col="blue")
+```
+
+
+**Observation:** If a line is fit, it almost completely overlaps with the the graph plotted, however with a few outliers. The addition of (another variable)right quantities of alcohol balances the equation and fit will be better.
+ 
+ 
+ 
+## Exercise 4 (Writing and Using Functions)
+
+For each of the following parts, use the following vectors:
+
+```{r}
+a = 1:10
+b = 10:1
+c = rep(1, times = 10)
+d = 2 ^ (1:10)
+```
+
+**(a)** Write a function called `sum_of_squares`.
+
+- Arguments:
+    - A vector of numeric data `x`
+- Output:
+    - The sum of the squares of the elements of the vector $\sum_{i = 1}^n x_i^2$
+    
+```{r}
+
+sum_of_squares <- function(x)
+{
+  sum((x)^ 2)
+}
+
+```
+
+Result of running the following code on the sum_if_squares function:
+
+```{r}
+sum_of_squares(x = a)
+sum_of_squares(x = c(c, d))
+```
+
+
+**(b)** Using only your function `sum_of_squares()`, `mean()`, `sqrt()`, and basic math operations such as `+` and `-`, calculate
+
+\[
+\sqrt{\frac{1}{n}\sum_{i = 1}^n (x_i - 0)^{2}}
+\]
+
+where the $x$ vector is `d` and the $y$ vector is `b`.
+
+```{r}
+n <- sqrt((sum_of_squares(x = d))/sum_of_squares(x = c))
+n
+```
+
+**(c)** Using only your function `sum_of_squares()`, `mean()`, `sqrt()`, and basic math operations such as `+` and `-`, calculate
+
+\[
+\sqrt{\frac{1}{n}\sum_{i = 1}^n (x_i - y_i)^{2}}
+\]
+
+where the $x$ vector is `a` and the $y$ vector is `b`.
+
+```{r}
+g <- a-b
+m <- sqrt ((sum_of_squares(x = g))/sum_of_squares(x = c))
+m
+```
+
+
+## Exercise 5 (More Writing and Using Functions)
+
+For each of the following parts, use the following vectors:
+
+```{r}
+set.seed(42)
+x = 1:100
+y = rnorm(1000)
+z = runif(150, min = 0, max = 1)
+```
+
+**(a)** Write a function called `list_extreme_values`.
+
+- Arguments:
+    - A vector of numeric data `x`
+    - A positive constant, `k`, with a default value of `2`
+- Output:
+    - A list with two elements:
+        - `small`, a vector of elements of `x` that are $k$ sample standard deviations less than the sample mean. That is, the observations that are smaller than $\bar{x} - k \cdot s$.
+        - `large`, a vector of elements of `x` that are $k$ sample standard deviations greater than the sample mean. That is, the observations that are larger than $\bar{x} + k \cdot s$.
+        
+```{r}
+list_extreme_values <- function(x,k=2)
+{
+
+  small <- list(x[x< (mean(x) - k*sd(x))])
+  large <- list(x[x> (mean(x) + k*sd(x))])
+  r <- c(small,large)
+  names(r) <- c("small","large")
+  r
+}
+```
+
+Result of running the following code on the list_extreme_values function:
+
+```{r}
+list_extreme_values(x = x, k = 1)
+list_extreme_values(x = y, k = 3)
+list_extreme_values(x = y, k = 2)
+list_extreme_values(x = z, k = 1.5)
+```
+
+**(b)** Using only your function `list_extreme_values()`, `mean()`, and basic list operations, calculate the mean of observations that are greater than 1.5 standard deviation above the mean in the vector `y`.
+
+```{r}
+
+b <- list_extreme_values(x=y,k=1.5)
+meanb<- mean(b[[2]])
+meanb
+
+```
+
+
+
+
