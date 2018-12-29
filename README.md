@@ -1,1 +1,4 @@
-# Stat-420-at-UIUC-weekly-assignments
+# Stat-420 at UIUC - Weekly assignments
+
+The Homework assignment solutions of Methods of Applied Statistics at UIUC
+
